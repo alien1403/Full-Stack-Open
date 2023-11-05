@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
 import Person from '../components/Person'
+import Notification from '../components/Notification'
 import axios from 'axios'
 import personService from './services/persons'
+import './index.css'
 
 const Filter = (props) => {
   return(
@@ -48,6 +50,23 @@ const App = () => {
   const [newName, setNewName] = useState('')
   const [newPhone, setNewPhone] = useState('')
   const [searchInput, setSearchInput] = useState('')
+  const [successMessage, setSuccessMessage] = useState(null);
+  const [errorMessage, setErrorMessage] = useState(null);
+  const [messageType, setMessageType] = useState('test');
+
+  const showSuccessNotification = (message) => {
+    setSuccessMessage(message);
+    setTimeout(() => {
+      setSuccessMessage(null);
+    }, 5000);
+  };
+
+  const showErrorNotification = (message) => {
+    setErrorMessage(message);
+    setTimeout(() => {
+      setErrorMessage(null);
+    }, 5000);
+  };
 
   const handleDelete = (id) => {
     if(window.confirm('Do you really want to delete this contact?')){
@@ -55,9 +74,12 @@ const App = () => {
        .deletePerson(id)
        .then(() =>{
         setPersons(persons.filter((person) => person.id !== id))
+        showSuccessNotification(`Deleted`);
+        setMessageType("success");
        })
        .catch((error) => {
-        console.log("Error deleting contact:", error)
+        showErrorNotification("Error deleting the contact " + error);
+        setMessageType("error");
        })
     }
   }
@@ -67,7 +89,6 @@ const App = () => {
       .getAll()
       .then(response => {
         setPersons(response.data)
-        console.log(response.data)
       })
   } ,[])
 
@@ -92,9 +113,12 @@ const App = () => {
             );
             setNewName('');
             setNewPhone('');
+            showSuccessNotification(`Modified ${response.data.name}`);
+            setMessageType("success");
           })
           .catch((error) => {
-            console.error("Error updating contact:", error);
+            showErrorNotification("Error adding contact " + error);
+            setMessageType("error");
           });
       }
     } else {
@@ -108,9 +132,14 @@ const App = () => {
           setPersons(persons.concat(response.data));
           setNewName('');
           setNewPhone('');
+          showSuccessNotification(`Added ${response.data.name}`);
+          showErrorNotification(null);
+          setMessageType("success")
         })
         .catch((error) => {
-          console.error("Error adding contact:", error);
+          showErrorNotification("Error adding contact");
+          showSuccessNotification(null);
+          setMessageType("error");
         });
     }
   };
@@ -129,9 +158,10 @@ const App = () => {
 
   return (
     <div>
+      <Notification message={successMessage} type={messageType} />
+      <Notification message={errorMessage} type={messageType} />
       <h2>Phonebook</h2>
       <Filter searchInput={searchInput} handleSearchChange={handleSearchChange}/>
-      
       <h3>Add a new</h3>
       <PersonForm
         addPerson={addPerson} newName={newName} handleNameChange={handleNameChange} newPhone={newPhone} handlePhoneChange={handlePhoneChange}
