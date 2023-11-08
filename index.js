@@ -1,9 +1,7 @@
-const cors = require('cors')
 const express = require('express')
 const app = express()
 
-app.use(cors())
-
+app.use(express.static('dist'))
 
 let persons = [
   { name: 'Arto Hellas', number: '040-123456', id: 1 },
@@ -43,7 +41,7 @@ app.delete('/api/persons/:id', (req, res) => {
   res.status(204).end()
 })
 
-app.use(express.json());
+// app.use(express.json());
 
 app.post('/api/persons', (req, res) => {
   const body = req.body
